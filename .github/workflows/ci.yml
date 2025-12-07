@@ -1,0 +1,24 @@
+# https://docs.github.com/en/actions/tutorials/build-and-test-code/rust
+name: ci
+on:
+  push:
+    branches: ["master"]
+  pull_request:
+    branches: ["master"]
+  workflow_dispatch:
+env:
+  CARGO_TERM_COLOR: always
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        BUILD_TARGET: [dev]
+    steps:
+      - uses: actions/checkout@v6
+      - run: rustup toolchain install stable --profile minimal
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo build --verbose --profile ${{ matrix.BUILD_TARGET }}
+      - run: cargo check --verbose --profile ${{ matrix.BUILD_TARGET }}
+      - run: cargo clippy -- -D warnings --verbose
+      - run: cargo test --verbose --profile ${{ matrix.BUILD_TARGET }}
